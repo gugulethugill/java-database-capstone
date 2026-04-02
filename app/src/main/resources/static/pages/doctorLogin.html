@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctor Login</title>
+</head>
+<body>
+
+<h2>Doctor Login</h2>
+
+<input type="email" id="email" placeholder="Email"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+
+<button onclick="loginDoctor()">Login</button>
+
+<script>
+    async function loginDoctor() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const response = await fetch("/doctor/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ identifier: email, password })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", result.token);
+        window.location.href = `/doctorDashboard/${result.token}`;
+      } else {
+        alert(result.message || "Login failed");
+      }
+    }
+</script>
+
+</body>
+</html>

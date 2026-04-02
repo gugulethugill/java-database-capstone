@@ -1,6 +1,109 @@
 package com.project.back_end.controllers;
 
+import com.project.back_end.DTO.Login;
+import com.project.back_end.models.Patient;
+import com.project.back_end.services.PatientService;
+import com.project.back_end.services.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/patient")
 public class PatientController {
+    private final PatientService patientService;
+    private final Service service;
+
+    @Autowired
+    public PatientController(PatientService patientService, Service service) {
+        this.patientService = patientService;
+        this.service = service;
+    }
+
+    /**
+     * Get patient details using JWT token.
+     */
+    @GetMapping("/{token}")
+    public ResponseEntity<Map<String, Object>> getPatientDetails(@PathVariable String token) {
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "patient");
+        if (tokenValidation.getStatusCode() != HttpStatus.OK) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", tokenValidation.getBody().get("error"));
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+        return patientService.getPatientDetails(token);
+    }
+
+    /**
+     * Create a new patient.
+     */
+    @PostMapping()
+    public ResponseEntity<Map<String, String>> createPatient(@RequestBody Patient patient) {
+        Map<String, String> response = new HashMap<>();
+
+        if (!service.validatePatient(patient)) {
+            response.put("error", "Patient with email id or phone no already exist");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
+        int result = patientService.createPatient(patient);
+        if (result == 1) {
+            response.put("message", "Signup successful");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            response.put("error", "Internal server error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Patient login endpoint.
+     */
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> patientLogin(@RequestBody Login login) {
+        return service.validatePatientLogin(login);
+    }
+
+    /**
+     * Get patient appointments.
+     */
+    @GetMapping("/{id}/{token}")
+    public ResponseEntity<Map<String, Object>> getPatientAppointments(
+            @PathVariable Long id,
+            @PathVariable String token) {
+
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "patient");
+        if (tokenValidation.getStatusCode() != HttpStatus.OK) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", tokenValidation.getBody().get("error"));
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        return patientService.getPatientAppointment(id, token);
+    }
+
+    /**
+     * Filter patient appointments by condition and doctor name.
+     */
+    @GetMapping("/filter/{condition}/{name}/{token}")
+    public ResponseEntity<Map<String, Object>> filterPatientAppointments(
+            @PathVariable String condition,
+            @PathVariable String name,
+            @PathVariable String token) {
+
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "patient");
+        if (tokenValidation.getStatusCode() != HttpStatus.OK) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", tokenValidation.getBody().get("error"));
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        return service.filterPatient(condition, name, token);
+    }
 
 // 1. Set Up the Controller Class:
 //    - Annotate the class with `@RestController` to define it as a REST API controller for patient-related operations.

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Patient Login</title>
+</head>
+<body>
+
+<h2>Patient Login</h2>
+
+<input type="text" id="username" placeholder="Username"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+
+<button onclick="loginAdmin()">Login</button>
+
+<script>
+    async function loginAdmin() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const response = await fetch("/patient/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", result.token);
+        window.location.href = `/patientDashboard/${result.token}`;
+      } else {
+        alert(result.message || "Login failed");
+      }
+    }
+</script>
+
+</body>
+</html>

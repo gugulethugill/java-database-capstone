@@ -1,6 +1,139 @@
 package com.project.back_end.services;
 
+import com.project.back_end.DTO.Login;
+import com.project.back_end.models.Admin;
+import com.project.back_end.models.Appointment;
+import com.project.back_end.models.Doctor;
+import com.project.back_end.models.Patient;
+import com.project.back_end.repo.AdminRepository;
+import com.project.back_end.repo.DoctorRepository;
+import com.project.back_end.repo.PatientRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@org.springframework.stereotype.Service
 public class Service {
+    @Autowired
+    private TokenService tokenService;
+
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
+    private DoctorRepository doctorRepository;
+
+    @Autowired
+    private PatientRepository patientRepository;
+
+    @Autowired
+    private DoctorService doctorService;
+
+    @Autowired
+    private PatientService patientService;
+
+    /**
+     * Validate token for user type
+     */
+    public ResponseEntity<Map<String, String>> validateToken(String token, String user) {
+        Map<String, String> response = new HashMap<>();
+        boolean valid = tokenService.validateToken(token, user);
+        if (!valid) {
+            response.put("message", "Unauthorized or invalid token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        response.put("message", "Token is valid");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Validate Admin credentials
+     */
+    public ResponseEntity<Map<String, String>> validateAdmin(Admin receivedAdmin) {
+        Map<String, String> response = new HashMap<>();
+        Optional<Admin> admin = adminRepository.findByUsername(receivedAdmin.getUsername());
+        if (admin != null && admin.get().getPassword().equals(receivedAdmin.getPassword())) {
+            String token = tokenService.generateToken(admin.get().getUsername());
+            response.put("token", token);
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
+    /**
+     * Filter doctors by name, specialty, and time
+     */
+    public Map<String, Object> filterDoctor(String name, String specialty, String time) {
+        return doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time);
+    }
+
+    /**
+     * Validate appointment
+     */
+    public int validateAppointment(Appointment appointment) {
+        Optional<Doctor> doctorOpt = doctorRepository.findById(appointment.getDoctor().getId());
+        if (doctorOpt.isEmpty()) return -1;
+
+        List<String> availableSlots = doctorService.getDoctorAvailability(appointment.getDoctor().getId(),
+                String.valueOf(appointment.getAppointmentTime().toLocalDate()));
+        if (availableSlots.contains(appointment.getAppointmentTime().toLocalTime().toString())) {
+            return 1;
+        } else return 0;
+    }
+
+    /**
+     * Validate new patient
+     */
+    public boolean validatePatient(Patient patient) {
+        Patient existing = patientRepository.findByEmailOrPhone(patient.getEmail(), patient.getPhone());
+        return existing == null; // true if patient does not exist
+    }
+
+    /**
+     * Validate patient login
+     */
+    public ResponseEntity<Map<String, String>> validatePatientLogin(Login login) {
+        Map<String, String> response = new HashMap<>();
+        Optional<Patient> patient = patientRepository.findByEmail(login.getIdentifier());
+        if (patient != null && patient.get().getPassword().equals(login.getPassword())) {
+            String token = tokenService.generateToken(patient.get().getEmail());
+            response.put("token", token);
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
+    /**
+     * Filter patient appointments by condition or doctor name
+     */
+    public ResponseEntity<Map<String, Object>> filterPatient(String condition, String name, String token) {
+        Map<String, Object> response = new HashMap<>();
+        String email = tokenService.extractIdentifier(token);
+        Optional<Patient> patient = patientRepository.findByEmail(email);
+        if (patient == null) {
+            response.put("message", "Unauthorized");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        if (condition != null && name != null) {
+            return patientService.filterByDoctorAndCondition(condition, name, patient.get().getId());
+        } else if (condition != null) {
+            return patientService.filterByCondition(condition, patient.get().getId());
+        } else if (name != null) {
+            return patientService.filterByDoctor(name, patient.get().getId());
+        } else {
+            return patientService.getPatientAppointment(patient.get().getId(), token);
+        }
+    }
 // 1. **@Service Annotation**
 // The @Service annotation marks this class as a service component in Spring. This allows Spring to automatically detect it through component scanning
 // and manage its lifecycle, enabling it to be injected into controllers or other services using @Autowired or constructor injection.

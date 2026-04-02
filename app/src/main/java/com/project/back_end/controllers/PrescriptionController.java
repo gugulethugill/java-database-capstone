@@ -1,6 +1,65 @@
 package com.project.back_end.controllers;
 
+import com.project.back_end.models.Prescription;
+import com.project.back_end.services.PrescriptionService;
+import com.project.back_end.services.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("${api.path}prescription")
 public class PrescriptionController {
+    private final PrescriptionService prescriptionService;
+    private final Service service;
+
+    @Autowired
+    public PrescriptionController(PrescriptionService prescriptionService, Service service) {
+        this.prescriptionService = prescriptionService;
+        this.service = service;
+    }
+
+    /**
+     * Save a prescription (accessible by doctors only)
+     */
+    @PostMapping("/{token}")
+    public ResponseEntity<Map<String, String>> savePrescription(
+            @PathVariable String token,
+            @RequestBody Prescription prescription) {
+
+        // Validate token for doctor
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "doctor");
+        if (tokenValidation.getStatusCode() != HttpStatus.OK) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", tokenValidation.getBody().get("error"));
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        return prescriptionService.savePrescription(prescription);
+    }
+
+    /**
+     * Get prescription by appointment ID (accessible by doctors only)
+     */
+    @GetMapping("/{appointmentId}/{token}")
+    public ResponseEntity<Map<String, Object>> getPrescription(
+            @PathVariable Long appointmentId,
+            @PathVariable String token) {
+
+        // Validate token for doctor
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "doctor");
+        if (tokenValidation.getStatusCode() != HttpStatus.OK) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", tokenValidation.getBody().get("error"));
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+
+        return prescriptionService.getPrescription(appointmentId);
+    }
     
 // 1. Set Up the Controller Class:
 //    - Annotate the class with `@RestController` to define it as a REST API controller.

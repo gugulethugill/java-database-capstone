@@ -1,22 +1,109 @@
+// adminDashboard.js
 import { openModal } from './components/modals.js';
 import { getDoctors, filterDoctors, saveDoctor } from './services/doctorServices.js';
 import { createDoctorCard } from './components/doctorCard.js';
+import { adminAddDoctor } from './services/doctorServices.js'; // ensure this exists
 
-document.addEventListener('DOMContentLoaded', loadDoctorCards);
+// Initialize the dashboard when DOM is ready
+document.addEventListener('DOMContentLoaded', initDashboard);
 
-async function loadDoctorCards() {
-  const contentDiv = document.getElementById('content');
-  contentDiv.innerHTML = '';
-  const doctors = await getDoctors();
-  renderDoctorCards(doctors);
+async function initDashboard() {
+  await loadDoctorCards();
+
+  // Event delegation: works even if button is dynamically added
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'addDoctorBtn') {
+      openModal('addDoctor');
+    }
+
+    if (e.target.id === 'saveDoctorBtn') {
+      adminAddDoctor(); // handles modal form submission
+    }
+  });
+
+  // Attach filter inputs
+  const searchBar = document.getElementById('searchBar');
+  const filterTime = document.getElementById('filterTime');
+  const filterSpecialty = document.getElementById('filterSpecialty');
+
+  [searchBar, filterTime, filterSpecialty].forEach(el => {
+    if (el) {
+      el.addEventListener('input', filterDoctorsOnChange);
+      el.addEventListener('change', filterDoctorsOnChange);
+    }
+  });
 }
 
-function renderDoctorCards(doctors) {
+// Fetch all doctors and render cards
+export async function loadDoctorCards() {
   const contentDiv = document.getElementById('content');
+  contentDiv.innerHTML = ''; // clear previous cards
+  try {
+    const doctors = await getDoctors();
+    renderDoctorCards(doctors);
+  } catch (err) {
+    console.error('Error loading doctors:', err);
+  }
+}
+
+// Render doctor cards helper
+export function renderDoctorCards(doctors) {
+  const contentDiv = document.getElementById('content');
+  contentDiv.innerHTML = ''; // clear before rendering
+  if (!doctors || doctors.length === 0) {
+    contentDiv.innerHTML = '<p>No doctors found.</p>';
+    return;
+  }
+
   doctors.forEach(doc => {
     contentDiv.appendChild(createDoctorCard(doc));
   });
 }
+
+// Filter doctors based on search and dropdowns
+async function filterDoctorsOnChange() {
+  const name = document.getElementById('searchBar')?.value.trim() || null;
+  const time = document.getElementById('filterTime')?.value || null;
+  const specialty = document.getElementById('filterSpecialty')?.value || null;
+
+  try {
+    const filteredDoctors = await filterDoctors(name, time, specialty);
+    renderDoctorCards(filteredDoctors);
+  } catch (err) {
+    alert('Error filtering doctors: ' + err.message);
+  }
+}
+//import { openModal } from './components/modals.js';
+//import { getDoctors, filterDoctors, saveDoctor } from './services/doctorServices.js';
+//import { createDoctorCard } from './components/doctorCard.js';
+//
+//document.addEventListener('DOMContentLoaded', loadDoctorCards);
+//
+//async function loadDoctorCards() {
+//  const contentDiv = document.getElementById('content');
+//  contentDiv.innerHTML = '';
+//  const doctors = await getDoctors();
+//  renderDoctorCards(doctors);
+//}
+//
+//function renderDoctorCards(doctors) {
+//  const contentDiv = document.getElementById('content');
+//  doctors.forEach(doc => {
+//    contentDiv.appendChild(createDoctorCard(doc));
+//  });
+//}
+//
+//document.addEventListener('DOMContentLoaded', () => {
+//  loadDoctorCards();
+//
+//  const addDoctorBtn = document.getElementById('addDoctorBtn');
+//
+//  if (addDoctorBtn) {
+//    addDoctorBtn.addEventListener('click', () => {
+//      openModal('addDoctor');
+//    });
+//  }
+//});
 /*
   This script handles the admin dashboard functionality for managing doctors:
   - Loads all doctor cards

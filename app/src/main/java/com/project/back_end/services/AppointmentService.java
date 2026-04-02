@@ -1,6 +1,122 @@
 package com.project.back_end.services;
 
+import com.project.back_end.models.Appointment;
+import com.project.back_end.repo.AppointmentRepository;
+import com.project.back_end.repo.DoctorRepository;
+import com.project.back_end.repo.PatientRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@Service
 public class AppointmentService {
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    @Autowired
+    private PatientRepository patientRepository;
+
+    @Autowired
+    private DoctorRepository doctorRepository;
+
+    @Autowired
+    private TokenService tokenService;
+
+    /**
+     * Book a new appointment
+     * @param appointment Appointment object to be saved
+     * @return 1 if successful, 0 if failed
+     */
+    public int bookAppointment(Appointment appointment) {
+        try {
+            appointmentRepository.save(appointment);
+            return 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * Update an existing appointment
+     * @param appointment Appointment object to update
+     * @return ResponseEntity with success/failure message
+     */
+    public ResponseEntity<Map<String, String>> updateAppointment(Appointment appointment) {
+        Map<String, String> response = new HashMap<>();
+        Optional<Appointment> existing = appointmentRepository.findById(appointment.getId());
+
+        if (existing.isPresent()) {
+            // Optionally validate appointment before updating
+            appointmentRepository.save(appointment);
+            response.put("message", "Appointment updated successfully");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "Appointment not found");
+            return ResponseEntity.status(404).body(response);
+        }
+    }
+
+    /**
+     * Cancel an appointment by ID with token validation
+     * @param id Appointment ID
+     * @param token Authorization token
+     * @return ResponseEntity with success/failure message
+     */
+    public ResponseEntity<Map<String, String>> cancelAppointment(long id, String token) {
+        Map<String, String> response = new HashMap<>();
+        Optional<Appointment> appointmentOpt = appointmentRepository.findById(id);
+
+        if (appointmentOpt.isPresent()) {
+            Appointment appointment = appointmentOpt.get();
+            // Validate token corresponds to patient who booked
+            Long patientId = Long.valueOf(tokenService.extractIdentifier(token));
+            if (!appointment.getPatient().getId().equals(patientId)) {
+                response.put("message", "Unauthorized to cancel this appointment");
+                return ResponseEntity.status(403).body(response);
+            }
+            appointmentRepository.delete(appointment);
+            response.put("message", "Appointment cancelled successfully");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "Appointment not found");
+            return ResponseEntity.status(404).body(response);
+        }
+    }
+
+    /**
+     * Retrieve appointments for a doctor on a specific date
+     * @param pname Optional patient name filter
+     * @param date Appointment date
+     * @param token Doctor authorization token
+     * @return Map containing list of appointments
+     */
+    public Map<String, Object> getAppointment(String pname, LocalDate date, String token) {
+        Map<String, Object> response = new HashMap<>();
+        Long doctorId = Long.valueOf(tokenService.extractIdentifier(token));
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.atTime(LocalTime.MAX);
+
+        List<Appointment> appointments;
+        if (pname == null || pname.isEmpty()) {
+            appointments = appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(doctorId, start, end);
+        } else {
+            appointments = appointmentRepository
+                    .findByDoctorIdAndPatient_NameContainingIgnoreCaseAndAppointmentTimeBetween(
+                            doctorId, pname, start, end);
+        }
+
+        response.put("appointments", appointments);
+        return response;
+    }
 // 1. **Add @Service Annotation**:
 //    - To indicate that this class is a service layer class for handling business logic.
 //    - The `@Service` annotation should be added before the class declaration to mark it as a Spring service component.

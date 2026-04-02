@@ -1,6 +1,18 @@
 package com.project.back_end.repo;
 
-public interface PatientRepository {
+import com.project.back_end.models.Patient;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface PatientRepository extends JpaRepository<Patient, Long> {
+    // Find a patient by email
+    Optional<Patient> findByEmail(String email);
+
+    // Find a patient by either email or phone number
+    Patient findByEmailOrPhone(String email, String phone);
     // 1. Extend JpaRepository:
 //    - The repository extends JpaRepository<Patient, Long>, which provides basic CRUD functionality.
 //    - This allows the repository to perform operations like save, delete, update, and find without needing to implement these methods manually.

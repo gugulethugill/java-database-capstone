@@ -1,6 +1,83 @@
 package com.project.back_end.services;
 
+import com.project.back_end.repo.AdminRepository;
+import com.project.back_end.repo.DoctorRepository;
+import com.project.back_end.repo.PatientRepository;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+
+
+@Component
 public class TokenService {
+    private final AdminRepository adminRepository;
+    private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
+
+    // Secret key (should be in application.properties)
+    private final String SECRET = "my-super-secret-key-that-is-long-enough-for-hmac";
+
+    public TokenService(AdminRepository adminRepository,
+                        DoctorRepository doctorRepository,
+                        PatientRepository patientRepository) {
+        this.adminRepository = adminRepository;
+        this.doctorRepository = doctorRepository;
+        this.patientRepository = patientRepository;
+    }
+
+    // Generate token valid for 7 days
+    public String generateToken(String identifier) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000L);
+
+        return Jwts.builder()
+                .subject(identifier) // Shortened from setSubject
+                .issuedAt(now)      // Shortened from setIssuedAt
+                .expiration(expiryDate) // Shortened from setExpiration
+                .signWith(getSigningKey()) // Algorithm is now often inferred from key
+                .compact();
+    }
+
+    // Extract the subject (email/username) from the token
+    public String extractIdentifier(String token) {
+        Claims claims = Jwts.parser() // Changed from parserBuilder()
+                .verifyWith(getSigningKey()) // Changed from setSigningKey()
+                .build()
+                .parseSignedClaims(token) // Changed from parseClaimsJws()
+                .getPayload(); // Changed from getBody()
+
+        return claims.getSubject();
+    }
+
+    // Validate token for a specific user type (admin, doctor, patient)
+    public boolean validateToken(String token, String userType) {
+        try {
+            String identifier = extractIdentifier(token);
+            switch (userType.toLowerCase()) {
+                case "admin":
+                    return adminRepository.findByUsername(identifier).isPresent();
+                case "doctor":
+                    return doctorRepository.findByEmail(identifier).isPresent();
+                case "patient":
+                    return patientRepository.findByEmail(identifier).isPresent();
+                default:
+                    return false;
+            }
+        } catch (Exception e) {
+            return false; // token invalid or expired
+        }
+    }
+
+    // Returns the secret key for signing
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+    }
 // 1. **@Component Annotation**
 // The @Component annotation marks this class as a Spring component, meaning Spring will manage it as a bean within its application context.
 // This allows the class to be injected into other Spring-managed components (like services or controllers) where it's needed.
