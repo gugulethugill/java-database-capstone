@@ -1,3 +1,24 @@
+import { getAllAppointments } from './services/appointmentRecordService.js';
+import { createPatientRow } from './components/patientRows.js';
+
+const tableBody = document.getElementById('patientTableBody');
+let selectedDate = new Date().toISOString().split('T')[0]; // today's date
+const token = localStorage.getItem('token');
+let patientName = null; // for search filter
+
+async function loadAppointments() {
+  try {
+    const appointments = await getAllAppointments(selectedDate, patientName, token);
+    tableBody.innerHTML = '';
+    if (!appointments || appointments.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="6">No Appointments found for today</td></tr>`;
+    } else {
+      appointments.forEach(app => tableBody.appendChild(createPatientRow(app)));
+    }
+  } catch (error) {
+    tableBody.innerHTML = `<tr><td colspan="6">Error loading appointments</td></tr>`;
+  }
+}
 /*
   Import getAllAppointments to fetch appointments from the backend
   Import createPatientRow to generate a table row for each patient appointment
