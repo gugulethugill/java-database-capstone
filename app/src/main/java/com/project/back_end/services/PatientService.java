@@ -1,6 +1,7 @@
 package com.project.back_end.services;
 
 import com.project.back_end.DTO.AppointmentDTO;
+import com.project.back_end.DTO.Login;
 import com.project.back_end.models.Appointment;
 import com.project.back_end.models.Patient;
 import com.project.back_end.repo.AppointmentRepository;
@@ -38,6 +39,31 @@ public class PatientService {
             e.printStackTrace();
             return 0;
         }
+    }
+
+    public ResponseEntity<Map<String, String>> validatePatientLogin(Login login) {
+        Map<String, String> response = new HashMap<>();
+
+        // Lookup patient safely using Optional
+        Optional<Patient> patientOpt = patientRepository.findByEmail(login.getIdentifier());
+        if (patientOpt.isEmpty()) {
+            response.put("message", "Invalid email or password");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        Patient patient = patientOpt.get();
+
+        // Check password
+        if (!patient.getPassword().equals(login.getPassword())) {
+            response.put("message", "Invalid email or password");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        // Generate JWT token
+        String token = tokenService.generateToken(patient.getEmail());
+        response.put("token", token);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -133,7 +159,7 @@ public class PatientService {
         String email = tokenService.extractIdentifier(token);
 
         Optional<Patient> patient = patientRepository.findByEmail(email);
-        if (patient == null) {
+        if (patient.isEmpty()) {
             response.put("message", "Patient not found");
             return ResponseEntity.status(404).body(response);
         }

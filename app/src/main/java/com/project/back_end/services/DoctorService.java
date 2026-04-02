@@ -125,9 +125,30 @@ public class DoctorService {
      * Filter doctors by name, specialty, and time (AM/PM)
      */
     public Map<String, Object> filterDoctorsByNameSpecilityandTime(String name, String specialty, String amOrPm) {
+//        Map<String, Object> response = new HashMap<>();
+//        List<Doctor> doctors = doctorRepository.findByNameContainingIgnoreCaseAndSpecialtyIgnoreCase(name, specialty);
+//        doctors = filterDoctorByTime(doctors, amOrPm);
+//        response.put("doctors", doctors);
+//        return response;
+        List<Doctor> doctors = doctorRepository.findAll();
+
+        if (name != null && !name.isEmpty() && !name.equals("null")) {
+            doctors = doctors.stream()
+                    .filter(d -> d.getName().toLowerCase().contains(name.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        if (specialty != null && !specialty.isEmpty() && !specialty.equals("null")) {
+            doctors = doctors.stream()
+                    .filter(d -> d.getSpecialty().equalsIgnoreCase(specialty))
+                    .collect(Collectors.toList());
+        }
+
+        if (amOrPm != null && !amOrPm.isEmpty() && !amOrPm.equals("null")) {
+            doctors = filterDoctorByTime(doctors, amOrPm);
+        }
+
         Map<String, Object> response = new HashMap<>();
-        List<Doctor> doctors = doctorRepository.findByNameContainingIgnoreCaseAndSpecialtyIgnoreCase(name, specialty);
-        doctors = filterDoctorByTime(doctors, amOrPm);
         response.put("doctors", doctors);
         return response;
     }
@@ -194,6 +215,30 @@ public class DoctorService {
                 .filter(d -> d.getAvailableTimes().stream()
                         .anyMatch(slot -> slot.toUpperCase().contains(amOrPm.toUpperCase())))
                 .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> filterDoctor(String name, String specialty, String time) {
+        List<Doctor> doctors = doctorRepository.findAll();
+
+        if (name != null && !name.isEmpty() && !name.equals("null")) {
+            doctors = doctors.stream()
+                    .filter(d -> d.getName().toLowerCase().contains(name.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        if (specialty != null && !specialty.isEmpty() && !specialty.equals("null")) {
+            doctors = doctors.stream()
+                    .filter(d -> d.getSpecialty().equalsIgnoreCase(specialty))
+                    .collect(Collectors.toList());
+        }
+
+        if (time != null && !time.isEmpty() && !time.equals("null")) {
+            doctors = filterDoctorByTime(doctors, time);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("doctors", doctors);
+        return response;
     }
 
 // 1. **Add @Service Annotation**:

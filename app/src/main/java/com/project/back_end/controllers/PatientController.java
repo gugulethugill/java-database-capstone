@@ -63,8 +63,13 @@ public class PatientController {
     /**
      * Patient login endpoint.
      */
+//    @PostMapping("/login")
+//    public ResponseEntity<Map<String, String>> patientLogin(@RequestBody Login login) {
+//        return service.validatePatientLogin(login);
+//    }
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> patientLogin(@RequestBody Login login) {
+        // Delegate login to the Service method
         return service.validatePatientLogin(login);
     }
 
