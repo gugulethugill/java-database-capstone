@@ -1,3 +1,47 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.main-content {
+    padding: 20px;
+}
+
+/* Search + Filters */
+#searchBar, input[type="date"] {
+    padding: 10px;
+    margin: 10px;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+thead {
+    background: #333;
+    color: white;
+}
+
+td, th {
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+tbody tr:hover {
+    background: #f2f2f2;
+}
+
+/* Button */
+button {
+    background: #017d7e;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
 /* This is the style sheet for the doctorDashboard.html */
 /* 
 **Table Header (`.table-header`)**

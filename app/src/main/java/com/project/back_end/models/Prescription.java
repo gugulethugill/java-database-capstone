@@ -4,7 +4,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-@Document(collection = "prescriptions")
+@Document(collection = "prescription")
 public class Prescription {
     @Id
     private String id; // MongoDB ObjectId, auto-generated

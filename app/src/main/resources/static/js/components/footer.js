@@ -1,3 +1,40 @@
+// footer.js
+
+function renderFooter() {
+    const footer = document.getElementById("footer");
+    if (!footer) return;
+
+    footer.innerHTML = `
+        <footer class="footer">
+            <div class="footer-container">
+
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <a href="#">About</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Press</a>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Support</h4>
+                    <a href="#">Help Center</a>
+                    <a href="#">Contact</a>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <a href="#">Terms</a>
+                    <a href="#">Privacy</a>
+                </div>
+
+            </div>
+
+            <p>© 2026 Smart Clinic</p>
+        </footer>
+    `;
+}
+
+renderFooter();
 /*
   Function to render the footer content into the page
       Select the footer element from the DOM

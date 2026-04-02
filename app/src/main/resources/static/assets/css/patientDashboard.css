@@ -1,3 +1,42 @@
+.main-content {
+    padding: 20px;
+}
+
+/* Search */
+.searchBar {
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Filters */
+.filter-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-select {
+    padding: 10px;
+    border-radius: 6px;
+}
+
+/* Doctor Cards */
+#content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: white;
+    padding: 20px;
+}
 /* This is the style sheet for the patientDashboard.html */
   .card-actions {
     background-color: #244557;

@@ -1,3 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Clinic</title>
+
+    <link rel="icon" href="./assets/favicon.ico" />
+    <link rel="stylesheet" href="./assets/css/index.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
+
+    <script src="./js/util.js" defer></script>
+    <script src="./js/render.js" defer></script>
+    <script src="./js/components/header.js" defer></script>
+    <script src="./js/components/footer.js" defer></script>
+</head>
+
+<body>
+<div class="container">
+    <div class="wrapper">
+
+        <div id="header"></div>
+
+        <main class="main-content">
+            <h2>Select Your Role</h2>
+
+            <button id="adminBtn" onclick="selectRole('admin')">Admin</button>
+            <button id="doctorBtn" onclick="selectRole('doctor')">Doctor</button>
+            <button id="patientBtn" onclick="selectRole('patient')">Patient</button>
+        </main>
+
+        <div id="footer"></div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal">
+    <span id="closeModal">&times;</span>
+    <div id="modal-body"></div>
+</div>
+
+<script type="module" src="./js/services/index.js" defer></script>
+
+<script>
+    function selectRole(role) {
+        localStorage.setItem("userRole", role);
+        document.getElementById("modal").style.display = "block";
+    }
+</script>
+
+</body>
+</html>
+
 <!-- index.html -->
 <!-- 
 

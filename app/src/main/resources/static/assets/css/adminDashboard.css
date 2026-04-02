@@ -1,3 +1,64 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    background: #f5f5f5;
+}
+
+/* Search + Filters */
+#searchBar, select {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* Content */
+#content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Buttons */
+button {
+    padding: 10px;
+    border-radius: 6px;
+    background: #017d7e;
+    color: white;
+    border: none;
+}
+
+button:hover {
+    background: #015c5d;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 20px;
+}
 /*this is the style sheet for the adminDashboard. */
 
 /* 

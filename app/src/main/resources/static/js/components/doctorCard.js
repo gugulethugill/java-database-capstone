@@ -1,3 +1,81 @@
+// doctorCard.js
+
+export function createDoctorCard(doctor) {
+
+    const card = document.createElement("div");
+    card.classList.add("doctor-card");
+
+    const role = localStorage.getItem("userRole");
+
+    // Doctor info
+    const infoDiv = document.createElement("div");
+    infoDiv.classList.add("doctor-info");
+
+    const name = document.createElement("h3");
+    name.textContent = doctor.name;
+
+    const specialty = document.createElement("p");
+    specialty.textContent = "Specialty: " + doctor.specialty;
+
+    const email = document.createElement("p");
+    email.textContent = "Email: " + doctor.email;
+
+    const availability = document.createElement("p");
+    availability.textContent = "Available: " + (doctor.availableTimes?.join(", ") || "N/A");
+
+    infoDiv.appendChild(name);
+    infoDiv.appendChild(specialty);
+    infoDiv.appendChild(email);
+    infoDiv.appendChild(availability);
+
+    // Actions
+    const actionsDiv = document.createElement("div");
+    actionsDiv.classList.add("card-actions");
+
+    // ADMIN → DELETE
+    if (role === "admin") {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+
+        deleteBtn.addEventListener("click", () => {
+            if (confirm("Delete this doctor?")) {
+                card.remove(); // (API call will come later)
+            }
+        });
+
+        actionsDiv.appendChild(deleteBtn);
+    }
+
+    // PATIENT (NOT LOGGED)
+    else if (role === "patient") {
+        const bookBtn = document.createElement("button");
+        bookBtn.textContent = "Book Now";
+
+        bookBtn.addEventListener("click", () => {
+            alert("Please login first.");
+        });
+
+        actionsDiv.appendChild(bookBtn);
+    }
+
+    // LOGGED PATIENT
+    else if (role === "loggedPatient") {
+        const bookBtn = document.createElement("button");
+        bookBtn.textContent = "Book Now";
+
+        bookBtn.addEventListener("click", () => {
+            alert("Booking functionality coming soon");
+        });
+
+        actionsDiv.appendChild(bookBtn);
+    }
+
+    // Final assembly
+    card.appendChild(infoDiv);
+    card.appendChild(actionsDiv);
+
+    return card;
+}
 /*
 Import the overlay function for booking appointments from loggedPatient.js
 
