@@ -1,0 +1,37 @@
+name: Lint Backend
+
+# Trigger workflow on push or pull request
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-backend:
+    runs-on: ubuntu-latest
+    name: Lint Java Code with Checkstyle
+
+    steps:
+      # Step 0: Checkout the repository
+      - uses: actions/checkout@v3
+
+      # Step 1: Set up Java 17
+      - name: Set up Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Step 2: Download Checkstyle
+      - name: Download Checkstyle
+        run: |
+          curl -L -o checkstyle.jar https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.15.0/checkstyle-10.15.0-all.jar
+
+      # Step 3: Download Google Style configuration
+      - name: Download Google Checks XML
+        run: |
+          curl -L -o google_checks.xml https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml
+
+      # Step 4: Run Checkstyle on Java source files
+      - name: Run Checkstyle
+        run: |
+          java -jar checkstyle.jar -c google_checks.xml app/src/main/java/com/project/back_end || true

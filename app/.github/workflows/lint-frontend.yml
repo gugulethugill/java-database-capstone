@@ -1,0 +1,38 @@
+name: Lint Frontend
+
+# Trigger the workflow on push or pull request
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-frontend:
+    runs-on: ubuntu-latest
+    name: Lint HTML, CSS, and JS
+
+    steps:
+      # Step 0: Checkout the repository
+      - uses: actions/checkout@v3
+
+      # Step 1: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # Step 2: Install linters globally
+      - name: Install linters
+        run: |
+          npm install -g htmlhint stylelint eslint
+
+      # Step 3: Lint HTML files
+      - name: Lint HTML
+        run: htmlhint "app/src/main/resources/static/assets/pages/**/*.html" || true
+
+      # Step 4: Lint CSS files
+      - name: Lint CSS
+        run: stylelint "app/src/main/resources/static/assets/css/**/*.css" || true
+
+      # Step 5: Lint JS files
+      - name: Lint JS
+        run: eslint "app/src/main/resources/static/assets/js/**/*.js" || true

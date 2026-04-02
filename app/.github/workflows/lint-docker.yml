@@ -1,0 +1,21 @@
+name: Lint Dockerfile
+
+# Trigger workflow on push or pull_request
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-docker:
+    runs-on: ubuntu-latest
+    name: Lint Dockerfile with Hadolint
+
+    steps:
+      # Step 0: Checkout repository
+      - uses: actions/checkout@v3
+
+      # Step 1: Run Hadolint on the Dockerfile
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v2.1.0
+        with:
+          dockerfile: app/Dockerfile

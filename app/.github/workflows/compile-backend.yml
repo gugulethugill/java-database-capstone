@@ -1,0 +1,28 @@
+name: Compile Backend
+
+# Trigger workflow on push or pull request
+on:
+  push:
+  pull_request:
+
+jobs:
+  compile-backend:
+    runs-on: ubuntu-latest
+    name: Compile Java Back-End with Maven
+
+    steps:
+      # Step 0: Checkout repository
+      - uses: actions/checkout@v3
+
+      # Step 1: Set up Java 17
+      - name: Set up Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Step 2: Change into the app/ directory and compile with Maven
+      - name: Compile with Maven
+        run: |
+          cd app
+          mvn clean compile
